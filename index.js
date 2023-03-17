@@ -1,4 +1,4 @@
-require("dotenv").config();
+// require("dotenv").config();
 const express = require("express");
 const app = express();
 const videoData = require("./routes/videos.js")
@@ -10,8 +10,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 app.use("/videos", videoData);
-app.use("/videos/:Id", videoData);
-
+app.use("/videos/:videoId", videoData);
+app.use("/videos/:videoId/comments", videoData)
+app.use("/videos/:videoId/comments/:commentId", videoData)
 
 
 // START SERVER
