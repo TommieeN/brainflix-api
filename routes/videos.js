@@ -6,11 +6,15 @@ const { v4: uuid } = require("uuid");
 
 router.use(express.json());
 
+function readAndParseData() {
+    const data = fs.readFileSync("./data/videos.json", "utf-8");
+    return JSON.parse(data);
+}
+
 //VIDEOLIST ROUTE
 router.route("/").get((req, res) => {
   try {
-    const data = fs.readFileSync("./data/video-details.json", "utf-8");
-    const videoData = JSON.parse(data).map((video) => {
+    const videoData = readAndParseData().map((video) => {
       return {
         id: video.id,
         title: video.title,
@@ -27,8 +31,7 @@ router.route("/").get((req, res) => {
 //MAIN VIDEO ROUTE
 router.get("/:videoId", (req, res) => {
   try {
-    const data = fs.readFileSync("./data/video-details.json", "utf-8");
-    let videoData = JSON.parse(data);
+    const videoData = readAndParseData();
     const foundVideo = videoData.find(
       (video) => video.id === req.params.videoId
     );
@@ -43,8 +46,7 @@ router.post("/:videoId/comments", (req, res) => {
   try {
     const videoId = req.params.videoId;
     const { name, comment } = req.body;
-    const data = fs.readFileSync("./data/video-details.json", "utf-8");
-    let videoData = JSON.parse(data);
+    const videoData = readAndParseData();
     const foundVideo = videoData.find((video) => video.id === videoId);
     if (!foundVideo) {
       return res.status(404).send("Video not found");
@@ -56,7 +58,7 @@ router.post("/:videoId/comments", (req, res) => {
       timestamp: Date.now(),
     };
     foundVideo.comments.push(newComment);
-    fs.writeFileSync("./data/video-details.json", JSON.stringify(videoData));
+    fs.writeFileSync("./data/videos.json", JSON.stringify(videoData));
     res.json({ comments: foundVideo.comments });
   } catch (error) {
     res.status(500).send("Server error");
@@ -66,17 +68,17 @@ router.post("/:videoId/comments", (req, res) => {
 //DELETE COMMENT ROUTE
 router.delete("/:videoId/comments/:commentId", (req, res) => {
   try {
-    const data = fs.readFileSync("./data/video-details.json", "utf-8");
-    let videoData = JSON.parse(data);
+    const videoData = readAndParseData();
     const newVideoData = videoData.map((video) => {
       if (video.id === req.params.videoId) {
         const newCommentArr = video.comments.filter(
-          (comment) => comment.id !== req.params.commentId)
+          (comment) => comment.id !== req.params.commentId
+        );
         video.comments = newCommentArr;
       }
       return video;
-    });    
-    fs.writeFileSync("./data/video-details.json", JSON.stringify(newVideoData));
+    });
+    fs.writeFileSync("./data/videos.json", JSON.stringify(newVideoData));
     res.status(200).send(`Post with ${req.params.commentId} has been deleted`);
   } catch (error) {
     res.status(500).send("Server error");
@@ -84,28 +86,35 @@ router.delete("/:videoId/comments/:commentId", (req, res) => {
 });
 
 router.post("/", (req, res) => {
-  const data = fs.readFileSync("./data/video-details.json", "utf-8");
-    let videoData = JSON.parse(data);
+  const videoData = readAndParseData();
+  const { title, description } = req.body;
+  if (!title || !description) {
+    return res
+      .status(400)
+      .send("Please a provide title, descripion, and image");
+  }
+  if (title.length < 5 || description.length < 5) {
+    return res
+      .status(400)
+      .send("Title and description must be more than 5 characters");
+  }
   const newVideo = {
     id: uuid(),
-    title: req.body.title,
-    channel: "John",
-    description: req.body.description,
-    image: req.body.image,
+    title,
+    channel: "Anonymous",
+    description,
+    image: "/images/image9.jpeg",
     views: "9409",
     likes: "7777",
     duration: "2:44",
     timestamp: Date.now(),
     comments: [],
-    video: "https://project-2-api.herokuapp.com/stream"
+    video: "https://project-2-api.herokuapp.com/stream",
   };
-  console.log(newVideo);
-  videoData.push(newVideo);
-  
-  fs.writeFileSync("./data/video-details.json", JSON.stringify(videoData));
-  res.status(201).send("Thank you for uploading!")
-  console.log("newVideo: ", newVideo)
-});
 
+  videoData.push(newVideo);
+  fs.writeFileSync("./data/videos.json", JSON.stringify(videoData));
+  res.status(201).send("Thank you for uploading!");
+});
 
 module.exports = router;
