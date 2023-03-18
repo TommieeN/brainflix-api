@@ -4,8 +4,10 @@ const fs = require("fs");
 const { title } = require("process");
 const { v4: uuid } = require("uuid");
 
+//MIDDLEWARE
 router.use(express.json());
 
+// READ AND PARSE DATA FUNCTION
 function readAndParseData() {
     const data = fs.readFileSync("./data/videos.json", "utf-8");
     return JSON.parse(data);
@@ -85,6 +87,7 @@ router.delete("/:videoId/comments/:commentId", (req, res) => {
   }
 });
 
+// UPLOAD VIDEO ROUTE
 router.post("/", (req, res) => {
   const videoData = readAndParseData();
   const { title, description } = req.body;
