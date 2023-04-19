@@ -24,6 +24,7 @@
 ---
 
 <h3> Installation </h3>
+<p> If you're using vs code you can start the website locally by installing the node modules for the front end and back end, then start it up using <b>npm start</b> for the front end and <b>npm run dev</b> for the backend </p>
 
 <h3> Front End</h3>
 
